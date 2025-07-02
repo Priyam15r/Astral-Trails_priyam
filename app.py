@@ -87,7 +87,7 @@ st.metric("☢ Estimated Total Dose (mSv)", f"{total_dose:.2f}")
 st.metric("⚠ Estimated Cancer Risk", f"{risk_percent:.2f} %")
 
 st.caption("ICRP model: 5% risk increase per 1 Sv of exposure. Not for clinical use.")
-import matplotlib.pyplot as plt
+import matplotlib as plt
 
 # Generate array of days for plotting
 days_array = np.linspace(1, 1000, 100)
