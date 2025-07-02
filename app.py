@@ -87,47 +87,21 @@ st.metric("☢ Estimated Total Dose (mSv)", f"{total_dose:.2f}")
 st.metric("⚠ Estimated Cancer Risk", f"{risk_percent:.2f} %")
 
 st.caption("ICRP model: 5% risk increase per 1 Sv of exposure. Not for clinical use.")
-import matplotlib as plt
+import pandas as pd
 
-# Generate array of days for plotting
-days_array = np.linspace(1, 1000, 100)
+MAX_DAYS = 1000
+days = np.arange(1, MAX_DAYS + 1)
 
-# -------------------- PLOT 1 --------------------
-# Shielding factor remains constant per material, so we'll plot horizontal lines
-fig1, ax1 = plt.subplots(figsize=(10, 5))
-for material, factor in shield_factors.items():
-    ax1.plot(days_array, [factor]*len(days_array), label=material, alpha=0.4, linewidth=1)
+# 1. Shielding Factor vs. Mission Duration (all materials)
+df_shielding = pd.DataFrame({mat: [shield_factors[mat]] * MAX_DAYS for mat in shield_factors}, index=days)
+st.subheader("Shielding Factor vs. Mission Duration")
+st.line_chart(df_shielding)
 
-# Highlight selected material
-selected_factor = shield_factors[shielding_material]
-ax1.plot(days_array, [selected_factor]*len(days_array), label=f"Selected: {shielding_material}", color="red", linewidth=2)
+# 2. Total Dose vs. Mission Duration (selected material)
+dose_curve = base_dose_per_day * shield_factors[shielding_material] * days
+df_dose = pd.DataFrame({shielding_material: dose_curve}, index=days)
+st.subheader(f"Total Dose vs. Mission Duration ({shielding_material})")
+st.line_chart(df_dose)
 
-# Highlight vertical line at selected day
-ax1.axvline(mission_days, color='green', linestyle='--', label="Selected Duration")
-
-ax1.set_title("Shielding Factor vs Mission Duration")
-ax1.set_xlabel("Mission Duration (days)")
-ax1.set_ylabel("Shielding Factor")
-ax1.legend(loc='upper right', fontsize="small", ncol=2)
-ax1.grid(True)
-
-st.pyplot(fig1)
-
-# -------------------- PLOT 2 --------------------
-# Total dose over days for selected material
-dose_over_days = base_dose_per_day * shield_factors[shielding_material] * days_array
-
-fig2, ax2 = plt.subplots(figsize=(10, 5))
-ax2.plot(days_array, dose_over_days, label=f"Dose for {shielding_material}", color="purple")
-
-# Highlight selected point
-selected_dose = base_dose_per_day * shield_factors[shielding_material] * mission_days
-ax2.plot(mission_days, selected_dose, 'ro', label=f"{mission_days} days: {selected_dose:.2f} mSv")
-
-ax2.set_title("Estimated Total Dose vs Mission Duration")
-ax2.set_xlabel("Mission Duration (days)")
-ax2.set_ylabel("Total Dose (mSv)")
-ax2.legend()
-ax2.grid(True)
-
-st.pyplot(fig2)
+# Optional: Highlight selected day (textual)
+st.info(f"At {mission_days} days with {shielding_material}, estimated total dose: {dose_curve[mission_days-1]:.2f} mSv")
