@@ -87,3 +87,55 @@ st.metric("☢ Estimated Total Dose (mSv)", f"{total_dose:.2f}")
 st.metric("⚠ Estimated Cancer Risk", f"{risk_percent:.2f} %")
 
 st.caption("ICRP model: 5% risk increase per 1 Sv of exposure. Not for clinical use.")
+import plotly.graph_objects as go
+
+# ——————————————————————————————————————————————
+# Prepare data
+# ——————————————————————————————————————————————
+MAX_DAYS = 1000
+days = np.arange(1, MAX_DAYS+1)
+# constant SF curves for all materials
+fig_sf = go.Figure()
+for mat, sf in shield_factors.items():
+    fig_sf.add_trace(go.Scatter(
+        x=days, y=[sf]*len(days),
+        mode="lines", name=mat, line=dict(width=1)
+    ))
+# highlight selected day
+fig_sf.add_shape(
+    type="line", x0=mission_days, x1=mission_days,
+    y0=0, y1=1.05, yref="y", line=dict(color="red", dash="dash")
+)
+fig_sf.update_layout(
+    title="Shielding Factor vs. Mission Duration",
+    xaxis_title="Days in Space",
+    yaxis_title="Shielding Factor",
+    showlegend=False, height=350
+)
+st.plotly_chart(fig_sf, use_container_width=True)
+
+# ——————————————————————————————————————————————
+# Total dose over time for the chosen material
+# ——————————————————————————————————————————————
+daily = base_dose_per_day * shield_factors[shielding_material]
+dose_curve = daily * days
+fig_td = go.Figure()
+fig_td.add_trace(go.Scatter(
+    x=days, y=dose_curve,
+    mode="lines", name=shielding_material,
+    line=dict(color="royalblue", width=3)
+))
+# highlight the current mission_days point
+fig_td.add_trace(go.Scatter(
+    x=[mission_days], y=[daily * mission_days],
+    mode="markers", marker=dict(color="red", size=8),
+    name="Selected Day"
+))
+fig_td.update_layout(
+    title=f"Total Dose vs. Mission Duration ({shielding_material})",
+    xaxis_title="Days in Space",
+    yaxis_title="Cumulative Dose (mSv)",
+    showlegend=False, height=350
+)
+st.plotly_chart(fig_td, use_container_width=True)
+
