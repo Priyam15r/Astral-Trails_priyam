@@ -1,8 +1,7 @@
 import streamlit as st
 import requests
 import numpy as np
-import plotly.graph_objects as go
-pip install streamlit plotly pandas numpy requests
+
 st.set_page_config(page_title="Radiation Risk Calculator", layout="centered")
 
 st.title("Cosmic Radiation Risk Calculator")
