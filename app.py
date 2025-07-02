@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import numpy as np
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="Radiation Risk Calculator", layout="centered")
 
@@ -87,11 +88,7 @@ st.metric("☢ Estimated Total Dose (mSv)", f"{total_dose:.2f}")
 st.metric("⚠ Estimated Cancer Risk", f"{risk_percent:.2f} %")
 
 st.caption("ICRP model: 5% risk increase per 1 Sv of exposure. Not for clinical use.")
-import plotly.graph_objects as go
 
-# ——————————————————————————————————————————————
-# Prepare data
-# ——————————————————————————————————————————————
 MAX_DAYS = 1000
 days = np.arange(1, MAX_DAYS+1)
 # constant SF curves for all materials
